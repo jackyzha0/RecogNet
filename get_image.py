@@ -6,6 +6,7 @@ ENDPOINT = "https://rekognition.us-west-2.amazonaws.com/detectlabels"
 file_loc = "imgs/tmp.png"
 
 minconf = 75
+DIM = [480, 640]
 
 def initCam():
     cthrow('Loaded OpenCV', type='OK')
@@ -26,6 +27,27 @@ def getCap(cap):
     cap.release()
     return frame
 
+def decodeInstance(arr):
+    decode_arr = []
+    for inst in arr:
+        _ = inst['BoundingBox']
+        left = float(_['Left'])
+        top = float(_['Top'])
+        width = float(_['Width'])
+        height = float(_['Height'])
+        inst_tmp = [left*DIM[1], top*DIM[0], (left+width)*DIM[1], (height+top)*DIM[0], float(inst['Confidence'])] # Format [x1, y1, x2, y2, conf]
+        decode_arr.append(inst_tmp)
+    return decode_arr
+
+def dispImage(frame,preds):
+    for inst in preds:
+        if inst[4] > 85:
+            cv2.rectangle(frame, (int(inst[0]), int(inst[1])), (int(inst[2]), int(inst[3])), (0, 0, 255), 1)#inst[4]/100)
+            cv2.putText(frame, str(inst[4]), (int(inst[0]), int(inst[1])-5), cv2.FONT_HERSHEY_PLAIN, 1.0, (0, 0, 255))
+
+    cv2.imshow("frame.jpg", frame)
+    cv2.waitKey(10000)
+
 cap = initCam()
 frame = getCap(cap)
 cthrow('Frame retrieved', type='OK')
@@ -40,7 +62,5 @@ with open(file_loc, 'rb') as image:
 
 for label in response['Labels']:
     if label['Name'] == 'Person':
-        print(label['Instances'])
-        print(label['Name'])
-
-print('Done...')
+        arr = decodeInstance(label['Instances'])
+        dispImage(frame, arr)
