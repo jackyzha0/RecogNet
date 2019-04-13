@@ -46,21 +46,26 @@ def dispImage(frame,preds):
             cv2.putText(frame, str(inst[4]), (int(inst[0]), int(inst[1])-5), cv2.FONT_HERSHEY_PLAIN, 1.0, (0, 0, 255))
 
     cv2.imshow("frame.jpg", frame)
-    cv2.waitKey(10000)
-
-cap = initCam()
-frame = getCap(cap)
-cthrow('Frame retrieved', type='OK')
-cv2.imwrite(file_loc, frame)
-cthrow('Write file', type='OK')
+    while(cv2.waitKey(25) & 0xFF != ord('q')):
+        pass
 
 # BEGIN AWS SERVICES
 client=boto3.client('rekognition')
 
-with open(file_loc, 'rb') as image:
-    response = client.detect_labels(Image={'Bytes': image.read()}, MinConfidence=minconf)
+def getDect():
+    cap = initCam()
+    frame = getCap(cap)
+    cthrow('Frame retrieved', type='OK')
+    cv2.imwrite(file_loc, frame)
+    cthrow('Write file', type='OK')
 
-for label in response['Labels']:
-    if label['Name'] == 'Person':
-        arr = decodeInstance(label['Instances'])
-        dispImage(frame, arr)
+    with open(file_loc, 'rb') as image:
+        response = client.detect_labels(Image={'Bytes': image.read()}, MinConfidence=minconf)
+
+    for label in response['Labels']:
+        if label['Name'] == 'Person':
+            arr = decodeInstance(label['Instances'])
+            dispImage(frame, arr)
+
+while 1==1:
+    getDect()
