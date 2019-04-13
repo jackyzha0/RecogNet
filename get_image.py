@@ -1,6 +1,9 @@
 from throwcolour import cthrow
 import cv2
 import boto3
+import subprocess
+import os
+import time
 
 ENDPOINT = "https://rekognition.us-west-2.amazonaws.com/detectlabels"
 file_loc = "imgs/tmp.png"
@@ -20,11 +23,17 @@ def initCam():
         cthrow('Camera', type='OK')
     return cap
 
-def getCap(cap):
-    cthrow('Capture Start', type='INFO')
-    ret, frame = cap.read()
-    print(frame.shape)
-    cap.release()
+def getCap(usePi = False):
+    cap = initCam()
+    if usePi:
+        cthrow('Using Raspberry Pi Camera')
+        subprocess.call(["./getImg.sh"])
+        cthrow('Image received!', type='OK')
+    else:
+        cthrow('Capture Start', type='INFO')
+        ret, frame = cap.read()
+        print(frame.shape)
+        cap.release()
     return frame
 
 def decodeInstance(arr):
@@ -53,8 +62,7 @@ def dispImage(frame,preds):
 client=boto3.client('rekognition')
 
 def getDect():
-    cap = initCam()
-    frame = getCap(cap)
+    frame = getCap(usePi = True)
     cthrow('Frame retrieved', type='OK')
     cv2.imwrite(file_loc, frame)
     cthrow('Write file', type='OK')
