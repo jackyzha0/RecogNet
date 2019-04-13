@@ -6,7 +6,7 @@ import os
 import time
 
 ENDPOINT = "https://rekognition.us-west-2.amazonaws.com/detectlabels"
-file_loc = "imgs/tmp.png"
+file_loc = "imgs/tmp.jpg"
 
 minconf = 75
 DIM = [480, 640]
@@ -29,6 +29,7 @@ def getCap(usePi = False):
         cthrow('Using Raspberry Pi Camera')
         subprocess.call(["./getImg.sh"])
         cthrow('Image received!', type='OK')
+        frame = cv2.imread('/media/jacky/jzhao_cs/CS/RecogNet/imgs/tmp.jpg')
     else:
         cthrow('Capture Start', type='INFO')
         ret, frame = cap.read()
@@ -63,6 +64,7 @@ client=boto3.client('rekognition')
 
 def getDect():
     frame = getCap(usePi = True)
+    # frame = getCap()
     cthrow('Frame retrieved', type='OK')
     cv2.imwrite(file_loc, frame)
     cthrow('Write file', type='OK')
@@ -70,10 +72,11 @@ def getDect():
     with open(file_loc, 'rb') as image:
         response = client.detect_labels(Image={'Bytes': image.read()}, MinConfidence=minconf)
 
+    print(response)
+
     for label in response['Labels']:
         if label['Name'] == 'Person':
             arr = decodeInstance(label['Instances'])
             dispImage(frame, arr)
 
-while 1==1:
-    getDect()
+getDect()

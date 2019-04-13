@@ -16,6 +16,6 @@ done
 echo 'File found and copied!'
 echo 'Cleaning up...'
 
-sshpass -p 'raspberry' ssh $HOST 'rm /home/pi/recogNet/imgs/tmp.jpg'
+sshpass -p 'raspberry' ssh $HOST 'rm /home/pi/recogNet/imgs/*'
 
 #scp pi@10.42.0.74:/home/pi/recogNet/imgs
